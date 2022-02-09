@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Virtual tables contain a set of functions that compose an interface.
+Virtual tables contain a set of functions that compose an interface. They redirect calls to a public interface to a (private) implementation.
 
 In this example project, we create a `switchable` interface which contains two functions: `switchable_turn_on()` and `switchable_turn_off()`. Then, we create a concrete implementation for `lamp` objects. Finally, we create an application in which we create a `lamp` and run its `switchable` implementation.
 
@@ -34,7 +34,7 @@ struct my_class {
 };
 ```
 
-**Listing 1**. Each instance of my_class will have a reference to each one of its methods.
+**Listing 1**. Each instance of `my_class` will have a reference to each one of its methods.
 
 ```c
 struct my_class_methods;  // Forward declaration of the vtable
@@ -51,7 +51,7 @@ struct my_class_methods {
 };
 ```
 
-**Listing 2**. Only one copy of my_class_methods is necessary. Although we had to write a bit more code.
+**Listing 2**. Only one instance of `my_class_methods` is necessary for all `my_class` instances we create. Although we had to write a bit more code.
 
 ## Interface definition recipe
 
@@ -62,3 +62,23 @@ We have defined the example interface `switchable` in source/switchable. It only
 3. **Application's definitions**. These are intended to be used by the application. Ideally, the application should only use the base and the application definitions.
 
 The application definitions contain a set of `static inline` functions. Using these, the application can hide the redirections to the interface implementations. In consequence, the interface module can be swapped by any other alternate implementation that defines the same abstract datatype and function prototypes (reduces coupling between the application and the module).
+
+Following from the definitions in Listing 2, we could create the redirection inline function as we show in Listing 3. The application can run the class method just as it would run any typical C function (Listing 4).
+
+```c
+static inline void my_class_method_1(struct my_class * self) {
+    self->implementation->method_1(self);
+}
+```
+
+**Listing 3**. Interface redirection using static inline functions.
+
+```c
+int main() {
+    struct my_class * instance;
+    instance = my_class_create();
+    my_class_method_1(instance);  // How the interface looks like in apps
+}
+```
+
+**Listing 4**. Application code invoking a function of the interface defined in listings 2 and 3.
